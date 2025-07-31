@@ -6,11 +6,13 @@ import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
+import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
-import androidx.compose.material3.Text
+import androidx.compose.material3.Surface
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.tooling.preview.Preview
+import androidx.compose.ui.graphics.Color
+import androidx.navigation.compose.rememberNavController
 import com.yieom.smsmessenger.ui.theme.SMSMessengerTheme
 
 class MainActivity : ComponentActivity() {
@@ -19,11 +21,11 @@ class MainActivity : ComponentActivity() {
         enableEdgeToEdge()
         setContent {
             SMSMessengerTheme {
-                Scaffold(modifier = Modifier.fillMaxSize()) { innerPadding ->
-                    Greeting(
-                        name = "Android",
-                        modifier = Modifier.padding(innerPadding)
-                    )
+                Surface(
+                    modifier = Modifier.fillMaxSize(),
+                    color = Color.White
+                ) {
+                    MainScreenWithNav()
                 }
             }
         }
@@ -31,17 +33,14 @@ class MainActivity : ComponentActivity() {
 }
 
 @Composable
-fun Greeting(name: String, modifier: Modifier = Modifier) {
-    Text(
-        text = "Hello $name!",
-        modifier = modifier
-    )
-}
+fun MainScreenWithNav(modifier: Modifier = Modifier) {
+    val navController = rememberNavController()
+    val startDestination = MainDestination.HOME
 
-@Preview(showBackground = true)
-@Composable
-fun GreetingPreview() {
-    SMSMessengerTheme {
-        Greeting("Android")
+    Scaffold(
+        bottomBar = {
+        }
+    ) { contentPadding ->
+        MainNavHost(navController, startDestination, modifier = Modifier.padding(contentPadding))
     }
 }
