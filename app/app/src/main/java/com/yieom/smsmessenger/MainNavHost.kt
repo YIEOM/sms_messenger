@@ -6,30 +6,58 @@ import androidx.navigation.NavHostController
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 
-enum class MainDestination(
+sealed class MainDestination(val route: String) {
+    object Home: MainDestination("home")
+    object Help: MainDestination("Help")
+    object Setting: MainDestination("setting")
+    object Permission: MainDestination("permission")
+}
+
+data class BottomNavItem(
     val route: String,
-    val contentDescription: String
+    val label: String
 ) {
-    HOME("home", "Home"),
-    PERMISSION("permission", "Permission"),
+    companion object {
+        fun getBottomNavItems(): List<BottomNavItem> {
+            return listOf(
+                BottomNavItem(
+                    route = MainDestination.Home.route,
+                    label = "HOME"
+                ),
+                BottomNavItem(
+                    route = MainDestination.Help.route,
+                    label = "HELP"
+                ),
+                BottomNavItem(
+                    route = MainDestination.Setting.route,
+                    label = "SETTING"
+                ),
+            )
+        }
+    }
 }
 
 @Composable
 fun MainNavHost(
     navController: NavHostController,
-    startDestination: MainDestination,
-    modifier: Modifier = Modifier
+    modifier: Modifier = Modifier,
 ) {
     NavHost(
         navController = navController,
-        startDestination = startDestination.route,
+        startDestination = MainDestination.Home.route,
         modifier = modifier
     ) {
-        composable(MainDestination.HOME.route) {
-            HomeScreen()
+        composable(MainDestination.Home.route) {
+            HomeScreen(navController = navController)
         }
-        composable(MainDestination.PERMISSION.route) {
-            PermissionScreen()
+        composable(MainDestination.Help.route) {
+            HelpScreen()
+        }
+        composable(MainDestination.Setting.route) {
+            SettingScreen()
+        }
+        composable(MainDestination.Permission.route) {
+            PermissionScreen(navController = navController)
         }
     }
 }

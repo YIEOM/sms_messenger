@@ -1,6 +1,5 @@
 package com.yieom.smsmessenger
 
-import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxSize
@@ -13,22 +12,28 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.unit.dp
+import androidx.hilt.navigation.compose.hiltViewModel
+import androidx.navigation.NavController
 
 @Composable
-fun HomeScreen() {
-    Surface(
-        modifier = Modifier
-            .fillMaxSize(),
-        color = Color.White
-    ) {
-        Column(
+fun HomeScreen(navController: NavController, viewModel: MainViewModel = hiltViewModel()) {
+    if (!viewModel.hasPermissions()) {
+        navController.navigate(MainDestination.Permission.route)
+    } else {
+        Surface(
             modifier = Modifier
-                .fillMaxSize()
-                .padding(16.dp),
-            verticalArrangement = Arrangement.Center,
-            horizontalAlignment = Alignment.CenterHorizontally
+                .fillMaxSize(),
+            color = Color.White
         ) {
-            Text(text = "Home Screen", style = MaterialTheme.typography.headlineMedium, color = Color.Black)
+            Column(
+                modifier = Modifier
+                    .fillMaxSize()
+                    .padding(16.dp),
+                verticalArrangement = Arrangement.Center,
+                horizontalAlignment = Alignment.CenterHorizontally
+            ) {
+                Text(text = "Home Screen", style = MaterialTheme.typography.headlineMedium, color = Color.Black)
+            }
         }
     }
 }

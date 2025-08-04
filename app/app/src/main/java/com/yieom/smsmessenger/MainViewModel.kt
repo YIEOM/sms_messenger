@@ -8,4 +8,8 @@ import javax.inject.Inject
 class MainViewModel @Inject constructor(
 
 ): ViewModel() {
+    var hasPermissions: Boolean = false
+    fun hasPermissions(): Boolean {
+        return hasPermissions
+    }
 }
