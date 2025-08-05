@@ -14,26 +14,28 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.navigation.NavController
+import timber.log.Timber
 
 @Composable
 fun HomeScreen(navController: NavController, viewModel: MainViewModel = hiltViewModel()) {
+    Timber.d("##HomeScreen, hasPermission: ${viewModel.hasPermissions()}")
     if (!viewModel.hasPermissions()) {
         navController.navigate(MainDestination.Permission.route)
-    } else {
-        Surface(
+    }
+
+    Surface(
+        modifier = Modifier
+            .fillMaxSize(),
+        color = Color.White
+    ) {
+        Column(
             modifier = Modifier
-                .fillMaxSize(),
-            color = Color.White
+                .fillMaxSize()
+                .padding(16.dp),
+            verticalArrangement = Arrangement.Center,
+            horizontalAlignment = Alignment.CenterHorizontally
         ) {
-            Column(
-                modifier = Modifier
-                    .fillMaxSize()
-                    .padding(16.dp),
-                verticalArrangement = Arrangement.Center,
-                horizontalAlignment = Alignment.CenterHorizontally
-            ) {
-                Text(text = "Home Screen", style = MaterialTheme.typography.headlineMedium, color = Color.Black)
-            }
+            Text(text = "Home Screen", style = MaterialTheme.typography.headlineMedium, color = Color.Black)
         }
     }
 }
