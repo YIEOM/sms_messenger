@@ -1,6 +1,5 @@
 package com.yieom.smsmessenger
 
-import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxSize
@@ -16,11 +15,11 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.unit.dp
-import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.navigation.NavController
+import timber.log.Timber
 
 @Composable
-fun PermissionScreen(navController: NavController, viewModel: MainViewModel = hiltViewModel()) {
+fun PermissionScreen(navController: NavController, mainViewModel: MainViewModel) {
     Surface(
         modifier = Modifier
             .fillMaxSize(),
@@ -35,7 +34,8 @@ fun PermissionScreen(navController: NavController, viewModel: MainViewModel = hi
         ) {
             Text(text = "Permission Screen", style = MaterialTheme.typography.headlineMedium, color = Color.Black)
             Button(onClick = {
-                viewModel.hasPermissions = true
+                mainViewModel.hasPermissions = true
+                Timber.d("##PermissionScreen, hasPermission: ${mainViewModel.hasPermissions()}")
                 navController.popBackStack()
             },
                 modifier = Modifier.width(200.dp).height(40.dp)) {

@@ -41,6 +41,7 @@ data class BottomNavItem(
 fun MainNavHost(
     navController: NavHostController,
     modifier: Modifier = Modifier,
+    mainViewModel: MainViewModel
 ) {
     NavHost(
         navController = navController,
@@ -48,7 +49,7 @@ fun MainNavHost(
         modifier = modifier
     ) {
         composable(MainDestination.Home.route) {
-            HomeScreen(navController = navController)
+            HomeScreen(navController = navController, mainViewModel = mainViewModel)
         }
         composable(MainDestination.Help.route) {
             HelpScreen()
@@ -57,7 +58,7 @@ fun MainNavHost(
             SettingScreen()
         }
         composable(MainDestination.Permission.route) {
-            PermissionScreen(navController = navController)
+            PermissionScreen(navController = navController, mainViewModel = mainViewModel)
         }
     }
 }

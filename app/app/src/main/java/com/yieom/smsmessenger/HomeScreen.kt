@@ -12,14 +12,13 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.unit.dp
-import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.navigation.NavController
 import timber.log.Timber
 
 @Composable
-fun HomeScreen(navController: NavController, viewModel: MainViewModel = hiltViewModel()) {
-    Timber.d("##HomeScreen, hasPermission: ${viewModel.hasPermissions()}")
-    if (!viewModel.hasPermissions()) {
+fun HomeScreen(navController: NavController, mainViewModel: MainViewModel) {
+    Timber.d("##HomeScreen, hasPermission: ${mainViewModel.hasPermissions()}")
+    if (!mainViewModel.hasPermissions()) {
         navController.navigate(MainDestination.Permission.route)
     }
 
