@@ -1,5 +1,6 @@
 package com.yieom.smsmessenger
 
+import android.Manifest
 import androidx.lifecycle.ViewModel
 import dagger.hilt.android.lifecycle.HiltViewModel
 import timber.log.Timber
@@ -15,4 +16,9 @@ class MainViewModel @Inject constructor(
     fun hasPermissions(): Boolean {
         return hasPermissions
     }
+
+    val requiredPermissions = arrayOf(
+        Manifest.permission.INTERNET,
+        Manifest.permission.SEND_SMS,
+    )
 }
