@@ -20,14 +20,7 @@ import timber.log.Timber
 
 @Composable
 fun HomeScreen(navController: NavController, mainViewModel: MainViewModel) {
-    Timber.d("##HomeScreen, hasPermission: ${mainViewModel.hasPermissions()}")
-    val allPermissionsGranted = mainViewModel.requiredPermissions.all { permission ->
-        ContextCompat.checkSelfPermission(LocalContext.current, permission) == PackageManager.PERMISSION_GRANTED
-    }
-
-    if (!allPermissionsGranted) {
-        navController.navigate(MainDestination.Permission.route)
-    }
+    Timber.d("##HomeScreen, recomposition")
 
     Surface(
         modifier = Modifier

@@ -1,5 +1,6 @@
 package com.yieom.smsmessenger
 
+import android.content.pm.PackageManager
 import android.os.Bundle
 import android.widget.Toast
 import androidx.activity.ComponentActivity
@@ -16,13 +17,12 @@ import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.SideEffect
 import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.remember
-import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
-import androidx.hilt.navigation.compose.hiltViewModel
+import androidx.core.content.ContextCompat
+import androidx.lifecycle.ViewModelProvider
 import androidx.navigation.NavHostController
 import androidx.navigation.compose.currentBackStackEntryAsState
 import androidx.navigation.compose.rememberNavController
@@ -32,11 +32,16 @@ import timber.log.Timber
 
 @AndroidEntryPoint
 class MainActivity : ComponentActivity() {
+    lateinit var viewModel: MainViewModel
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
+
+        viewModel = ViewModelProvider(this)[MainViewModel::class.java]
+
         enableEdgeToEdge()
         setContent {
             SMSMessengerTheme {
+
                 val storagePermissionResultLauncher = rememberLauncherForActivityResult(
                     contract = ActivityResultContracts.RequestPermission(),
                     onResult = { isGranted ->
@@ -52,13 +57,20 @@ class MainActivity : ComponentActivity() {
                     modifier = Modifier.fillMaxSize(),
                     color = Color.White
                 ) {
-                    val mainViewModel: MainViewModel = hiltViewModel()
-                    MainScreenWithNav(mainViewModel = mainViewModel)
+                    MainScreenWithNav(mainViewModel = viewModel)
                 }
-
-
             }
         }
+    }
+
+    override fun onResume() {
+        super.onResume()
+
+        val allPermissionsGranted = viewModel.requiredPermissions.all { permission ->
+            ContextCompat.checkSelfPermission(this, permission) == PackageManager.PERMISSION_GRANTED
+        }
+
+        viewModel.onResumePermissionCheck(allPermissionsGranted)
     }
 }
 
@@ -78,13 +90,14 @@ fun MainScreenWithNav(modifier: Modifier = Modifier, mainViewModel: MainViewMode
             }
         }
     ) { contentPadding ->
+        SideEffect { Timber.d("##MainScreenWithNav, MainNavHost recomposed") }
         MainNavHost(navController = navController, modifier = Modifier.padding(contentPadding), mainViewModel = mainViewModel)
     }
 }
 
 @Composable
 fun MainNavigationBar(
-    navController: NavHostController
+    navController: NavHostController,
 ) {
     val navBackStackEntry by navController.currentBackStackEntryAsState()
     val currentRoute = navBackStackEntry?.destination?.route

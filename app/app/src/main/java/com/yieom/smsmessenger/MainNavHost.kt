@@ -1,10 +1,12 @@
 package com.yieom.smsmessenger
 
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.ui.Modifier
 import androidx.navigation.NavHostController
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
+import timber.log.Timber
 
 sealed class MainDestination(val route: String) {
     object Home: MainDestination("home")
@@ -43,6 +45,14 @@ fun MainNavHost(
     modifier: Modifier = Modifier,
     mainViewModel: MainViewModel
 ) {
+    Timber.d("##MainNavHost, recomposition")
+    LaunchedEffect(Unit) {
+        mainViewModel.navigationEventChannel.collect { route ->
+            Timber.d("##MainNavHost, collect navigationEvent: $route")
+            navController.navigate(route)
+        }
+    }
+
     NavHost(
         navController = navController,
         startDestination = MainDestination.Home.route,
