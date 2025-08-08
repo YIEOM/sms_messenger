@@ -1,7 +1,13 @@
 package com.yieom.smsmessenger
 
+import android.Manifest
+import android.app.Activity
+import android.content.Intent
 import android.content.pm.PackageManager
+import android.net.Uri
+import android.os.Build
 import android.os.Bundle
+import android.provider.Settings
 import android.widget.Toast
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.rememberLauncherForActivityResult
@@ -21,6 +27,7 @@ import androidx.compose.runtime.SideEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.core.app.ActivityCompat
 import androidx.core.content.ContextCompat
 import androidx.lifecycle.ViewModelProvider
 import androidx.navigation.NavHostController
@@ -41,18 +48,6 @@ class MainActivity : ComponentActivity() {
         enableEdgeToEdge()
         setContent {
             SMSMessengerTheme {
-
-                val storagePermissionResultLauncher = rememberLauncherForActivityResult(
-                    contract = ActivityResultContracts.RequestPermission(),
-                    onResult = { isGranted ->
-                        if (isGranted) {
-                            Toast
-                                .makeText(this, "Permission granted", Toast.LENGTH_SHORT)
-                                .show()
-                        }
-                    }
-                )
-
                 Surface(
                     modifier = Modifier.fillMaxSize(),
                     color = Color.White
@@ -66,11 +61,65 @@ class MainActivity : ComponentActivity() {
     override fun onResume() {
         super.onResume()
 
-        val allPermissionsGranted = viewModel.requiredPermissions.all { permission ->
+        viewModel.onResumePermissionCheck(isGrantedRequiredPermissions())
+    }
+
+    @Deprecated("This method has been deprecated in favor of using the Activity Result API\n      which brings increased type safety via an {@link ActivityResultContract} and the prebuilt\n      contracts for common intents available in\n      {@link androidx.activity.result.contract.ActivityResultContracts}, provides hooks for\n      testing, and allow receiving results in separate, testable classes independent from your\n      activity. Use\n      {@link #registerForActivityResult(ActivityResultContract, ActivityResultCallback)} passing\n      in a {@link RequestMultiplePermissions} object for the {@link ActivityResultContract} and\n      handling the result in the {@link ActivityResultCallback#onActivityResult(Object) callback}.")
+    override fun onRequestPermissionsResult(
+        requestCode: Int,
+        permissions: Array<String>, grantResults: IntArray,
+    ) {
+        super.onRequestPermissionsResult(requestCode, permissions, grantResults)
+        when (requestCode) {
+            PERMISSION_REQUEST_CODE -> {
+                Timber.d("##request permissions: ${permissions.toList()}, grantResults: ${grantResults.toList()}")
+                if ((grantResults.isNotEmpty())) {
+                    for (i in permissions.indices) {
+                        if (grantResults[i] == PackageManager.PERMISSION_DENIED) {
+                            viewModel.requiredPermissions.forEach {
+                                if (it == permissions[i]) {
+                                    return
+                                }
+                            }
+                        }
+                    }
+                    Timber.d("##request permissions: ${isGrantedRequiredPermissions()}")
+                    if (isGrantedRequiredPermissions()) {
+                        viewModel.sendPermissionEventChannel(true)
+                    }
+                }
+            }
+
+            else -> {
+            }
+        }
+    }
+
+    private fun isGrantedRequiredPermissions(): Boolean {
+        return viewModel.requiredPermissions.all { permission ->
             ContextCompat.checkSelfPermission(this, permission) == PackageManager.PERMISSION_GRANTED
         }
+    }
 
-        viewModel.onResumePermissionCheck(allPermissionsGranted)
+    fun shouldShowRationale(permissions: List<String>): Boolean {
+        var shouldShowRationale = false
+        run {
+            permissions.forEach { permission ->
+                if (ActivityCompat.shouldShowRequestPermissionRationale(this, permission)) {
+                    Timber.d("##checkPermissions, permission: $permission")
+                    shouldShowRationale = true
+                    return@run
+                }
+            }
+        }
+        return shouldShowRationale
+    }
+
+    fun moveToApplicationDetailsSettingsActivity() {
+        Intent(Settings.ACTION_APPLICATION_DETAILS_SETTINGS).apply {
+            data = Uri.fromParts("package",packageName, null)
+            startActivity(this)
+        }
     }
 }
 

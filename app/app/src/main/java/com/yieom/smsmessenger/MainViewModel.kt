@@ -17,21 +17,23 @@ class MainViewModel @Inject constructor(
         Timber.d("##init")
     }
 
-    var hasPermissions: Boolean = false
-    fun hasPermissions(): Boolean {
-        return hasPermissions
-    }
-
     val requiredPermissions = arrayOf(
-        Manifest.permission.INTERNET,
         Manifest.permission.SEND_SMS,
     )
 
     private val _navigationEventChannel = Channel<String>(Channel.BUFFERED) // Or Channel.RENDEZVOUS
     val navigationEventChannel = _navigationEventChannel.receiveAsFlow()
 
-    fun onResumePermissionCheck(allPermissionsGranted: Boolean) {
-        if (!allPermissionsGranted) {
+    val _permissionEventChannel = Channel<Boolean>(Channel.BUFFERED)
+    val permissionEventChannel = _permissionEventChannel.receiveAsFlow()
+    fun sendPermissionEventChannel(value: Boolean) {
+        viewModelScope.launch {
+            _permissionEventChannel.send(value)
+        }
+    }
+
+    fun onResumePermissionCheck(isGrantedRequiredPermissions: Boolean) {
+        if (!isGrantedRequiredPermissions) {
             viewModelScope.launch {
                 _navigationEventChannel.send(MainDestination.Permission.route)
             }
