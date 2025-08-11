@@ -59,7 +59,7 @@ fun MainNavHost(
         modifier = modifier
     ) {
         composable(MainDestination.Home.route) {
-            HomeScreen(navController = navController, mainViewModel = mainViewModel)
+            HomeScreen(navController = navController)
         }
         composable(MainDestination.Help.route) {
             HelpScreen()
