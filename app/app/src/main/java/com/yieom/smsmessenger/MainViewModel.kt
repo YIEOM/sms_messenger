@@ -33,9 +33,11 @@ class MainViewModel @Inject constructor(
     }
 
     fun onResumePermissionCheck(isGrantedRequiredPermissions: Boolean) {
-        if (!isGrantedRequiredPermissions) {
-            viewModelScope.launch {
+        viewModelScope.launch {
+            if (!isGrantedRequiredPermissions) {
                 _navigationEventChannel.send(MainDestination.Permission.route)
+            } else {
+                _navigationEventChannel.send(MainDestination.Home.route)
             }
         }
     }

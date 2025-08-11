@@ -49,7 +49,16 @@ fun MainNavHost(
     LaunchedEffect(Unit) {
         mainViewModel.navigationEventChannel.collect { route ->
             Timber.d("##MainNavHost, collect navigationEvent: $route")
-            navController.navigate(route)
+            when (route) {
+                MainDestination.Home.route -> {
+                    if (navController.currentDestination?.route == MainDestination.Permission.route) {
+                        navController.popBackStack()
+                    }
+                }
+                else -> {
+                    navController.navigate(route)
+                }
+            }
         }
     }
 
