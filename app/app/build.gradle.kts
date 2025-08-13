@@ -43,6 +43,12 @@ android {
         buildConfig = true
         compose = true
     }
+
+    packagingOptions {
+        resources {
+            pickFirsts += "META-INF/DEPENDENCIES"
+        }
+    }
 }
 
 dependencies {
@@ -69,4 +75,14 @@ dependencies {
     implementation(libs.androidx.hilt.navigation.compose)
     implementation(libs.androidx.navigation.compose)
     implementation(libs.timber)
+
+    // Google Sign-In (Authentication)
+    implementation(libs.google.gms.auth)
+
+    // Google API 관련 라이브러리 묶음 (Bundle)
+    // 한 줄로 4개의 라이브러리를 추가합니다.
+    implementation(libs.bundles.google.api)
+
+    // Coroutines for background tasks
+    implementation(libs.kotlinx.coroutines.android)
 }

@@ -22,7 +22,7 @@ import kotlinx.coroutines.flow.collectLatest
 import timber.log.Timber
 
 @Composable
-fun HomeScreen(navController: NavController, homeViewModel: HomeViewModel = hiltViewModel()) {
+fun HomeScreen(navController: NavController, mainViewModel: MainViewModel, homeViewModel: HomeViewModel = hiltViewModel()) {
     Timber.d("##HomeScreen, recomposition")
 
     val context = LocalContext.current
@@ -46,6 +46,11 @@ fun HomeScreen(navController: NavController, homeViewModel: HomeViewModel = hilt
             horizontalAlignment = Alignment.CenterHorizontally
         ) {
             Text(text = "Home Screen", style = MaterialTheme.typography.headlineMedium, color = Color.Black)
+            Button(onClick = {
+                mainViewModel.requestSignIn()
+            }) {
+                Text("Google 로그인")
+            }
             Button(onClick = {
                 homeViewModel.sendMultipleSms(homeViewModel.getSmsDataList())
             }) {

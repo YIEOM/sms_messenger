@@ -41,4 +41,13 @@ class MainViewModel @Inject constructor(
             }
         }
     }
+
+    private val _requestSignInChannel = Channel<Boolean>() // Toast 메시지를 전달할 채널
+    val requestSignInChannel = _requestSignInChannel.receiveAsFlow() // UI에서 관찰할 Flow
+
+    fun requestSignIn() {
+        viewModelScope.launch {
+            _requestSignInChannel.send(true)
+        }
+    }
 }

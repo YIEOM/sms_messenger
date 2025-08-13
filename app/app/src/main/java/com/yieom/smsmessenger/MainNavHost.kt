@@ -9,15 +9,15 @@ import androidx.navigation.compose.composable
 import timber.log.Timber
 
 sealed class MainDestination(val route: String) {
-    object Home: MainDestination("home")
-    object Help: MainDestination("Help")
-    object Setting: MainDestination("setting")
-    object Permission: MainDestination("permission")
+    object Home : MainDestination("home")
+    object Help : MainDestination("Help")
+    object Setting : MainDestination("setting")
+    object Permission : MainDestination("permission")
 }
 
 data class BottomNavItem(
     val route: String,
-    val label: String
+    val label: String,
 ) {
     companion object {
         fun getBottomNavItems(): List<BottomNavItem> {
@@ -43,7 +43,7 @@ data class BottomNavItem(
 fun MainNavHost(
     navController: NavHostController,
     modifier: Modifier = Modifier,
-    mainViewModel: MainViewModel
+    mainViewModel: MainViewModel,
 ) {
     Timber.d("##MainNavHost, recomposition")
     LaunchedEffect(Unit) {
@@ -55,6 +55,7 @@ fun MainNavHost(
                         navController.popBackStack()
                     }
                 }
+
                 else -> {
                     navController.navigate(route)
                 }
@@ -68,7 +69,7 @@ fun MainNavHost(
         modifier = modifier
     ) {
         composable(MainDestination.Home.route) {
-            HomeScreen(navController = navController)
+            HomeScreen(navController = navController, mainViewModel = mainViewModel)
         }
         composable(MainDestination.Help.route) {
             HelpScreen()

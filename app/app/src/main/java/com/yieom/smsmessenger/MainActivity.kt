@@ -1,16 +1,12 @@
 package com.yieom.smsmessenger
 
-import android.Manifest
 import android.app.Activity
 import android.content.Intent
 import android.content.pm.PackageManager
 import android.net.Uri
-import android.os.Build
 import android.os.Bundle
 import android.provider.Settings
-import android.widget.Toast
 import androidx.activity.ComponentActivity
-import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
 import androidx.activity.result.contract.ActivityResultContracts
@@ -29,12 +25,29 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.core.app.ActivityCompat
 import androidx.core.content.ContextCompat
+import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.ViewModelProvider
+import androidx.lifecycle.lifecycleScope
+import androidx.lifecycle.repeatOnLifecycle
 import androidx.navigation.NavHostController
 import androidx.navigation.compose.currentBackStackEntryAsState
 import androidx.navigation.compose.rememberNavController
+import com.google.android.gms.auth.api.signin.GoogleSignIn
+import com.google.android.gms.auth.api.signin.GoogleSignInAccount
+import com.google.android.gms.auth.api.signin.GoogleSignInOptions
+import com.google.android.gms.common.api.ApiException
+import com.google.android.gms.common.api.Scope
+import com.google.android.gms.tasks.Task
+import com.google.api.client.extensions.android.http.AndroidHttp
+import com.google.api.client.googleapis.extensions.android.gms.auth.GoogleAccountCredential
+import com.google.api.client.json.gson.GsonFactory
+import com.google.api.services.sheets.v4.Sheets
+import com.google.api.services.sheets.v4.SheetsScopes
 import com.yieom.smsmessenger.ui.theme.SMSMessengerTheme
 import dagger.hilt.android.AndroidEntryPoint
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
 import timber.log.Timber
 
 @AndroidEntryPoint
@@ -53,6 +66,16 @@ class MainActivity : ComponentActivity() {
                     color = Color.White
                 ) {
                     MainScreenWithNav(mainViewModel = viewModel)
+                }
+            }
+        }
+
+        lifecycleScope.launch {
+            repeatOnLifecycle(Lifecycle.State.RESUMED) {
+                viewModel.requestSignInChannel.collect {
+                    if (it) {
+                        requestSignIn()
+                    }
                 }
             }
         }
@@ -117,8 +140,91 @@ class MainActivity : ComponentActivity() {
 
     fun moveToApplicationDetailsSettingsActivity() {
         Intent(Settings.ACTION_APPLICATION_DETAILS_SETTINGS).apply {
-            data = Uri.fromParts("package",packageName, null)
+            data = Uri.fromParts("package", packageName, null)
             startActivity(this)
+        }
+    }
+
+    private fun requestSignIn() {
+        val gso = GoogleSignInOptions.Builder(GoogleSignInOptions.DEFAULT_SIGN_IN)
+            .requestEmail()
+            // 여기서 Sheets API의 읽기 권한을 요청합니다.
+            .requestScopes(Scope(SheetsScopes.SPREADSHEETS_READONLY))
+            .build()
+
+        val signInClient = GoogleSignIn.getClient(this, gso)
+        // 로그인 인텐트 실행
+        signInLauncher.launch(signInClient.signInIntent)
+    }
+
+    private val signInLauncher = registerForActivityResult(
+        ActivityResultContracts.StartActivityForResult()
+    ) { result ->
+        if (result.resultCode == Activity.RESULT_OK) {
+            val task = GoogleSignIn.getSignedInAccountFromIntent(result.data)
+            // 로그인이 성공하면 API 호출
+            handleSignInResult(task)
+        }
+    }
+
+    private fun handleSignInResult(completedTask: Task<GoogleSignInAccount>) {
+        try {
+            val account = completedTask.getResult(ApiException::class.java)
+
+            lifecycleScope.launch(Dispatchers.IO) {
+                // 1. 인증 정보(Credential) 생성
+                val credential = GoogleAccountCredential.usingOAuth2(
+                    this@MainActivity, listOf(SheetsScopes.SPREADSHEETS_READONLY)
+                ).apply {
+                    selectedAccount = account.account
+                }
+
+                // 2. Sheets 서비스 객체 빌드
+                val sheetsService = Sheets.Builder(
+                    AndroidHttp.newCompatibleTransport(),
+                    GsonFactory(),
+                    credential
+                )
+                    .setApplicationName(applicationContext.packageName) // 앱 이름 설정
+                    .build()
+
+                Timber.w("##handleSignInResult sign in: $sheetsService")
+                // 3. 데이터 읽기
+                readDataFromSheet(sheetsService)
+            }
+        } catch (e: ApiException) {
+            // 로그인 실패 처리
+            Timber.w("##signInResult:failed code=" + e.statusCode)
+        }
+    }
+
+    private suspend fun readDataFromSheet(sheetsService: Sheets) {
+        // 읽어올 스프레드시트 ID와 범위를 지정합니다.
+        val spreadsheetId = "1CfUsj-IXwT-VmGPbs_SIbaLZY7r_2SZ4mOduiCYKmhE" // 예: "1BxiMVs0XRA5nFMdKvBdBZjgmUUqptlbs74OgvE2upms"
+        val range = "시트1!A1:D10" // 예: 시트1의 A1부터 D10까지
+
+        try {
+            val response = sheetsService.spreadsheets().values()
+                .get(spreadsheetId, range)
+                .execute()
+
+            val values = response.getValues() // 데이터가 2차원 리스트로 반환됩니다.
+
+            if (values != null && values.isNotEmpty()) {
+                // UI 스레드에서 결과 표시
+                withContext(Dispatchers.Main) {
+                    values.forEach { _ ->
+                        Timber.i("##readDataFromSheet ${values.map { it.map { cell -> cell.toString() } }}")
+                    }
+                    // 예: RecyclerView 어댑터에 데이터 설정
+//                    myAdapter.submitList(values.map { it.map { cell -> cell.toString() } })
+                }
+            } else {
+                Timber.d("##No data found.")
+            }
+        } catch (e: Exception) {
+            // API 호출 중 에러 처리
+            e.printStackTrace()
         }
     }
 }
