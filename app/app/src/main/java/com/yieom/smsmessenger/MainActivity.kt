@@ -6,6 +6,7 @@ import android.content.pm.PackageManager
 import android.net.Uri
 import android.os.Bundle
 import android.provider.Settings
+import android.widget.Toast
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
@@ -19,16 +20,19 @@ import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.SideEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.platform.LocalContext
 import androidx.core.app.ActivityCompat
 import androidx.core.content.ContextCompat
 import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.lifecycleScope
 import androidx.lifecycle.repeatOnLifecycle
+import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavHostController
 import androidx.navigation.compose.currentBackStackEntryAsState
 import androidx.navigation.compose.rememberNavController
@@ -46,6 +50,7 @@ import com.google.api.services.sheets.v4.SheetsScopes
 import com.yieom.smsmessenger.ui.theme.SMSMessengerTheme
 import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import timber.log.Timber
@@ -65,7 +70,7 @@ class MainActivity : ComponentActivity() {
                     modifier = Modifier.fillMaxSize(),
                     color = Color.White
                 ) {
-                    MainScreenWithNav(mainViewModel = viewModel)
+                    MainScreenWithNav(viewModel = viewModel)
                 }
             }
         }
@@ -230,7 +235,16 @@ class MainActivity : ComponentActivity() {
 }
 
 @Composable
-fun MainScreenWithNav(modifier: Modifier = Modifier, mainViewModel: MainViewModel) {
+fun MainScreenWithNav(modifier: Modifier = Modifier, viewModel: MainViewModel) {
+
+    val context = LocalContext.current
+
+    LaunchedEffect(key1 = Unit) {
+        viewModel.toastEvent.collectLatest { message ->
+            Toast.makeText(context, message, Toast.LENGTH_SHORT).show()
+        }
+    }
+
     val navController = rememberNavController()
 
     val navBackStackEntry by navController.currentBackStackEntryAsState()
@@ -246,7 +260,7 @@ fun MainScreenWithNav(modifier: Modifier = Modifier, mainViewModel: MainViewMode
         }
     ) { contentPadding ->
         SideEffect { Timber.d("##MainScreenWithNav, MainNavHost recomposed") }
-        MainNavHost(navController = navController, modifier = Modifier.padding(contentPadding), mainViewModel = mainViewModel)
+        MainNavHost(navController = navController, modifier = Modifier.padding(contentPadding), mainViewModel = viewModel)
     }
 }
 

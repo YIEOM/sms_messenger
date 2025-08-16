@@ -50,4 +50,7 @@ class MainViewModel @Inject constructor(
             _requestSignInChannel.send(true)
         }
     }
+
+    private val _toastEventChannel = Channel<String>() // Toast 메시지를 전달할 채널
+    val toastEvent = _toastEventChannel.receiveAsFlow() // UI에서 관찰할 Flow
 }
