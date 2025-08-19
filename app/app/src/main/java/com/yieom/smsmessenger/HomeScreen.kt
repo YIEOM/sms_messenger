@@ -7,6 +7,7 @@ import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.offset
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.text.KeyboardActions
 import androidx.compose.foundation.text.KeyboardOptions
@@ -29,6 +30,7 @@ import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
+import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavController
 import androidx.navigation.compose.rememberNavController
 import kotlinx.coroutines.flow.collectLatest
@@ -51,7 +53,8 @@ fun HomeScreen(
     }
 
     val keyboardController = LocalSoftwareKeyboardController.current
-    val sheetUrlText by homeViewModel.sheetUrlTextState.collectAsState()
+    val sheetUrlText by mainViewModel.sheetUrlTextState.collectAsState()
+    mainViewModel.setSheetUrlText("https://docs.google.com/spreadsheets/d/1PCljvY85pQBWFnuxd5AfoB5tIhnk9LMB2B7TqF1Kn8M/edit?usp=sharing")
 
     Surface(
         modifier =
@@ -77,10 +80,13 @@ fun HomeScreen(
                 OutlinedTextField(
                     value = sheetUrlText,
                     onValueChange = { newText ->
-                        homeViewModel.setSheetUrlText(newText)
+                        mainViewModel.setSheetUrlText(newText)
                     },
                     label = { Text("스프레드 시트 URL") },
-                    modifier = Modifier.padding(bottom = 16.dp),
+                    modifier =
+                        Modifier
+                            .weight(1f)
+                            .padding(bottom = 16.dp),
                     colors =
                         TextFieldDefaults.colors(
                             // 입력된 텍스트 색상
@@ -108,10 +114,16 @@ fun HomeScreen(
                             },
                         ),
                 )
-                Button(onClick = {
-                    mainViewModel.requestSignIn()
-                }) {
-                    Text("확인")
+                Button(
+                    modifier = Modifier.offset(6.dp),
+                    onClick = {
+                        mainViewModel.requestSignIn()
+                    },
+                ) {
+                    Text(
+                        text = "확인",
+                        maxLines = 1,
+                    )
                 }
             }
             Button(onClick = {
@@ -155,11 +167,11 @@ fun HomeScreenPreview() {
     // 이 방법은 ViewModel의 실제 로직을 테스트하는 것이 아니라 UI 모양만 보는 데 적합합니다.
     class MockMainViewModel : MainViewModel(/* 필요한 의존성 mock 객체 전달 */) {
         // 미리보기에 필요한 최소한의 동작이나 상태만 구현
+        override val sheetUrlTextState = kotlinx.coroutines.flow.MutableStateFlow("미리보기 URL")
     }
 
     class MockHomeViewModel : HomeViewModel(mockApplicationContext) {
         // 미리보기에 필요한 최소한의 동작이나 상태만 구현
-        override val sheetUrlTextState = kotlinx.coroutines.flow.MutableStateFlow("미리보기 URL")
         // ... 다른 필요한 상태나 함수 override
     }
 

@@ -8,8 +8,6 @@ import dagger.hilt.android.lifecycle.HiltViewModel
 import dagger.hilt.android.qualifiers.ApplicationContext
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.channels.Channel
-import kotlinx.coroutines.flow.MutableStateFlow
-import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.receiveAsFlow
 import kotlinx.coroutines.launch
 import timber.log.Timber
@@ -61,30 +59,6 @@ open class HomeViewModel
                 SmsData("010-4002-5160", "Jetpack Compose에서 보낸 테스트 메시지! 1"),
                 SmsData("010-4002-5160", "Jetpack Compose에서 보낸 테스트 메시지! 2"),
             )
-
-        private val _sheetUrlTextState = MutableStateFlow("")
-        open val sheetUrlTextState = _sheetUrlTextState.asStateFlow()
-
-        fun setSheetUrlText(text: String) {
-            _sheetUrlTextState.value = text
-        }
-
-        fun onSpreadSheetUrlTextChanged(): Boolean {
-            val text = sheetUrlTextState.value
-            val regex = "d/([a-zA-Z0-9_-]+)/edit".toRegex()
-            val matchResult = regex.find(text)
-
-            viewModelScope.launch {
-                if (matchResult != null) {
-                    val sheetId = matchResult.groupValues[1]
-
-                    _toastEventChannel.send("다음의 링크가 복사되었습니다. : $sheetId")
-                } else {
-                    _toastEventChannel.send("잘못된 링크를 복사했습니다.")
-                }
-            }
-            return false
-        }
 
         private fun showToast(message: String) {
             viewModelScope.launch {

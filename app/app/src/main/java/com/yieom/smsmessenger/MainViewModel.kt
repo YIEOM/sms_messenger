@@ -5,6 +5,8 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.channels.Channel
+import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.receiveAsFlow
 import kotlinx.coroutines.launch
 import timber.log.Timber
@@ -56,4 +58,30 @@ open class MainViewModel
 
         private val _toastEventChannel = Channel<String>() // Toast 메시지를 전달할 채널
         val toastEvent = _toastEventChannel.receiveAsFlow() // UI에서 관찰할 Flow
+
+        private fun showToast(message: String) {
+            viewModelScope.launch {
+                _toastEventChannel.send(message)
+            }
+        }
+
+        private val _sheetUrlTextState = MutableStateFlow("")
+        open val sheetUrlTextState = _sheetUrlTextState.asStateFlow()
+
+        fun setSheetUrlText(text: String) {
+            _sheetUrlTextState.value = text
+        }
+
+        fun checkSpreadSheetUrl(): Pair<Boolean, String> {
+            val text = sheetUrlTextState.value
+            val regex = "d/([a-zA-Z0-9_-]+)/edit".toRegex()
+            val matchResult = regex.find(text)
+
+            return if (matchResult != null) {
+                val sheetId = matchResult.groupValues[1]
+                Pair(true, sheetId)
+            } else {
+                Pair(false, "")
+            }
+        }
     }

@@ -32,7 +32,6 @@ import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.lifecycleScope
 import androidx.lifecycle.repeatOnLifecycle
-import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavHostController
 import androidx.navigation.compose.currentBackStackEntryAsState
 import androidx.navigation.compose.rememberNavController
@@ -58,6 +57,7 @@ import timber.log.Timber
 @AndroidEntryPoint
 class MainActivity : ComponentActivity() {
     lateinit var viewModel: MainViewModel
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
 
@@ -68,7 +68,7 @@ class MainActivity : ComponentActivity() {
             SMSMessengerTheme {
                 Surface(
                     modifier = Modifier.fillMaxSize(),
-                    color = Color.White
+                    color = Color.White,
                 ) {
                     MainScreenWithNav(viewModel = viewModel)
                 }
@@ -92,10 +92,13 @@ class MainActivity : ComponentActivity() {
         viewModel.onResumePermissionCheck(isGrantedRequiredPermissions())
     }
 
-    @Deprecated("This method has been deprecated in favor of using the Activity Result API\n      which brings increased type safety via an {@link ActivityResultContract} and the prebuilt\n      contracts for common intents available in\n      {@link androidx.activity.result.contract.ActivityResultContracts}, provides hooks for\n      testing, and allow receiving results in separate, testable classes independent from your\n      activity. Use\n      {@link #registerForActivityResult(ActivityResultContract, ActivityResultCallback)} passing\n      in a {@link RequestMultiplePermissions} object for the {@link ActivityResultContract} and\n      handling the result in the {@link ActivityResultCallback#onActivityResult(Object) callback}.")
+    @Deprecated(
+        "This method has been deprecated in favor of using the Activity Result API\n      which brings increased type safety via an {@link ActivityResultContract} and the prebuilt\n      contracts for common intents available in\n      {@link androidx.activity.result.contract.ActivityResultContracts}, provides hooks for\n      testing, and allow receiving results in separate, testable classes independent from your\n      activity. Use\n      {@link #registerForActivityResult(ActivityResultContract, ActivityResultCallback)} passing\n      in a {@link RequestMultiplePermissions} object for the {@link ActivityResultContract} and\n      handling the result in the {@link ActivityResultCallback#onActivityResult(Object) callback}.",
+    )
     override fun onRequestPermissionsResult(
         requestCode: Int,
-        permissions: Array<String>, grantResults: IntArray,
+        permissions: Array<String>,
+        grantResults: IntArray,
     ) {
         super.onRequestPermissionsResult(requestCode, permissions, grantResults)
         when (requestCode) {
@@ -123,11 +126,10 @@ class MainActivity : ComponentActivity() {
         }
     }
 
-    private fun isGrantedRequiredPermissions(): Boolean {
-        return viewModel.requiredPermissions.all { permission ->
+    private fun isGrantedRequiredPermissions(): Boolean =
+        viewModel.requiredPermissions.all { permission ->
             ContextCompat.checkSelfPermission(this, permission) == PackageManager.PERMISSION_GRANTED
         }
-    }
 
     fun shouldShowRationale(permissions: List<String>): Boolean {
         var shouldShowRationale = false
@@ -151,26 +153,29 @@ class MainActivity : ComponentActivity() {
     }
 
     private fun requestSignIn() {
-        val gso = GoogleSignInOptions.Builder(GoogleSignInOptions.DEFAULT_SIGN_IN)
-            .requestEmail()
-            // 여기서 Sheets API의 읽기 권한을 요청합니다.
-            .requestScopes(Scope(SheetsScopes.SPREADSHEETS_READONLY))
-            .build()
+        val gso =
+            GoogleSignInOptions
+                .Builder(GoogleSignInOptions.DEFAULT_SIGN_IN)
+                .requestEmail()
+                // 여기서 Sheets API의 읽기 권한을 요청합니다.
+                .requestScopes(Scope(SheetsScopes.SPREADSHEETS_READONLY))
+                .build()
 
         val signInClient = GoogleSignIn.getClient(this, gso)
         // 로그인 인텐트 실행
         signInLauncher.launch(signInClient.signInIntent)
     }
 
-    private val signInLauncher = registerForActivityResult(
-        ActivityResultContracts.StartActivityForResult()
-    ) { result ->
-        if (result.resultCode == Activity.RESULT_OK) {
-            val task = GoogleSignIn.getSignedInAccountFromIntent(result.data)
-            // 로그인이 성공하면 API 호출
-            handleSignInResult(task)
+    private val signInLauncher =
+        registerForActivityResult(
+            ActivityResultContracts.StartActivityForResult(),
+        ) { result ->
+            if (result.resultCode == Activity.RESULT_OK) {
+                val task = GoogleSignIn.getSignedInAccountFromIntent(result.data)
+                // 로그인이 성공하면 API 호출
+                handleSignInResult(task)
+            }
         }
-    }
 
     private fun handleSignInResult(completedTask: Task<GoogleSignInAccount>) {
         try {
@@ -178,20 +183,24 @@ class MainActivity : ComponentActivity() {
 
             lifecycleScope.launch(Dispatchers.IO) {
                 // 1. 인증 정보(Credential) 생성
-                val credential = GoogleAccountCredential.usingOAuth2(
-                    this@MainActivity, listOf(SheetsScopes.SPREADSHEETS_READONLY)
-                ).apply {
-                    selectedAccount = account.account
-                }
+                val credential =
+                    GoogleAccountCredential
+                        .usingOAuth2(
+                            this@MainActivity,
+                            listOf(SheetsScopes.SPREADSHEETS_READONLY),
+                        ).apply {
+                            selectedAccount = account.account
+                        }
 
                 // 2. Sheets 서비스 객체 빌드
-                val sheetsService = Sheets.Builder(
-                    AndroidHttp.newCompatibleTransport(),
-                    GsonFactory(),
-                    credential
-                )
-                    .setApplicationName(applicationContext.packageName) // 앱 이름 설정
-                    .build()
+                val sheetsService =
+                    Sheets
+                        .Builder(
+                            AndroidHttp.newCompatibleTransport(),
+                            GsonFactory(),
+                            credential,
+                        ).setApplicationName(applicationContext.packageName) // 앱 이름 설정
+                        .build()
 
                 Timber.w("##handleSignInResult sign in: $sheetsService")
                 // 3. 데이터 읽기
@@ -205,38 +214,48 @@ class MainActivity : ComponentActivity() {
 
     private suspend fun readDataFromSheet(sheetsService: Sheets) {
         // 읽어올 스프레드시트 ID와 범위를 지정합니다.
-        val spreadsheetId = "1CfUsj-IXwT-VmGPbs_SIbaLZY7r_2SZ4mOduiCYKmhE" // 예: "1BxiMVs0XRA5nFMdKvBdBZjgmUUqptlbs74OgvE2upms"
-        val range = "시트1!A1:D10" // 예: 시트1의 A1부터 D10까지
+        val result = viewModel.checkSpreadSheetUrl()
+        Timber.i("##readDataFromSheet, result $result")
+        if (result.first) {
+            val range = "문자메시지!A1:D10" // 예: 시트1의 A1부터 D10까지
 
-        try {
-            val response = sheetsService.spreadsheets().values()
-                .get(spreadsheetId, range)
-                .execute()
+            try {
+                val response =
+                    sheetsService
+                        .spreadsheets()
+                        .values()
+                        .get(result.second, range)
+                        .execute()
 
-            val values = response.getValues() // 데이터가 2차원 리스트로 반환됩니다.
+                val values = response.getValues() // 데이터가 2차원 리스트로 반환됩니다.
 
-            if (values != null && values.isNotEmpty()) {
-                // UI 스레드에서 결과 표시
-                withContext(Dispatchers.Main) {
-                    values.forEach { _ ->
-                        Timber.i("##readDataFromSheet ${values.map { it.map { cell -> cell.toString() } }}")
-                    }
-                    // 예: RecyclerView 어댑터에 데이터 설정
+                if (values != null && values.isNotEmpty()) {
+                    // UI 스레드에서 결과 표시
+                    withContext(Dispatchers.Main) {
+                        values.forEach { _ ->
+                            Timber.i("##readDataFromSheet ${values.map { it.map { cell -> cell.toString() } }}")
+                        }
+                        // 예: RecyclerView 어댑터에 데이터 설정
 //                    myAdapter.submitList(values.map { it.map { cell -> cell.toString() } })
+                    }
+                } else {
+                    Timber.d("##No data found.")
                 }
-            } else {
-                Timber.d("##No data found.")
+            } catch (e: Exception) {
+                // API 호출 중 에러 처리
+                e.printStackTrace()
             }
-        } catch (e: Exception) {
-            // API 호출 중 에러 처리
-            e.printStackTrace()
+        } else {
+            Toast.makeText(this, "URL이 잘못 입력되었습니다.", Toast.LENGTH_SHORT).show()
         }
     }
 }
 
 @Composable
-fun MainScreenWithNav(modifier: Modifier = Modifier, viewModel: MainViewModel) {
-
+fun MainScreenWithNav(
+    modifier: Modifier = Modifier,
+    viewModel: MainViewModel,
+) {
     val context = LocalContext.current
 
     LaunchedEffect(key1 = Unit) {
@@ -257,7 +276,7 @@ fun MainScreenWithNav(modifier: Modifier = Modifier, viewModel: MainViewModel) {
             if (shouldShowBottomBar) {
                 MainNavigationBar(navController)
             }
-        }
+        },
     ) { contentPadding ->
         SideEffect { Timber.d("##MainScreenWithNav, MainNavHost recomposed") }
         MainNavHost(navController = navController, modifier = Modifier.padding(contentPadding), mainViewModel = viewModel)
@@ -265,9 +284,7 @@ fun MainScreenWithNav(modifier: Modifier = Modifier, viewModel: MainViewModel) {
 }
 
 @Composable
-fun MainNavigationBar(
-    navController: NavHostController,
-) {
+fun MainNavigationBar(navController: NavHostController) {
     val navBackStackEntry by navController.currentBackStackEntryAsState()
     val currentRoute = navBackStackEntry?.destination?.route
 
@@ -286,7 +303,7 @@ fun MainNavigationBar(
                 },
                 icon = {
                 },
-                label = { Text(destination.label) }
+                label = { Text(destination.label) },
             )
         }
     }
