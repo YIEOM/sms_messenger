@@ -5,10 +5,12 @@ import android.widget.Toast
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.offset
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.text.KeyboardActions
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material3.Button
@@ -27,10 +29,10 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalSoftwareKeyboardController
 import androidx.compose.ui.text.input.ImeAction
+import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
-import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavController
 import androidx.navigation.compose.rememberNavController
 import kotlinx.coroutines.flow.collectLatest
@@ -52,9 +54,20 @@ fun HomeScreen(
         }
     }
 
+    LaunchedEffect(key1 = Unit) {
+        mainViewModel.sheetUrlTextState.collectLatest {
+            homeViewModel.changeSheetUrl(it)
+        }
+    }
+
+    LaunchedEffect(key1 = Unit) {
+        mainViewModel.cellsState.collectLatest {
+            homeViewModel.changeSmsMessages(it)
+        }
+    }
+
     val keyboardController = LocalSoftwareKeyboardController.current
-    val sheetUrlText by mainViewModel.sheetUrlTextState.collectAsState()
-    mainViewModel.setSheetUrlText("https://docs.google.com/spreadsheets/d/1PCljvY85pQBWFnuxd5AfoB5tIhnk9LMB2B7TqF1Kn8M/edit?usp=sharing")
+    val homeUiState by homeViewModel.homeUiState.collectAsState()
 
     Surface(
         modifier =
@@ -70,18 +83,16 @@ fun HomeScreen(
             verticalArrangement = Arrangement.Center,
             horizontalAlignment = Alignment.CenterHorizontally,
         ) {
-            Text(text = "Home Screen", style = MaterialTheme.typography.headlineMedium, color = Color.Black)
+            Text(text = "Home", style = MaterialTheme.typography.headlineMedium, color = Color.Black)
             Row(
-                modifier =
-                    Modifier
-                        .fillMaxWidth(),
                 verticalAlignment = Alignment.CenterVertically,
             ) {
                 OutlinedTextField(
-                    value = sheetUrlText,
+                    value = homeUiState.sheetUrl,
                     onValueChange = { newText ->
                         mainViewModel.setSheetUrlText(newText)
                     },
+                    maxLines = 1,
                     label = { Text("스프레드 시트 URL") },
                     modifier =
                         Modifier
@@ -121,17 +132,64 @@ fun HomeScreen(
                     },
                 ) {
                     Text(
-                        text = "확인",
+                        text = "가져오기",
                         maxLines = 1,
                     )
                 }
             }
-            Button(onClick = {
-                homeViewModel.sendMultipleSms(homeViewModel.getSmsDataList())
-            }) {
+            LazyColumn(
+                modifier =
+                    Modifier
+                        .weight(1f)
+                        .fillMaxHeight(),
+            ) {
+                items(homeUiState.smsMessages) { cellMessage ->
+                    CellMessage(cellMessage)
+                }
+            }
+            Button(
+                onClick = {
+                    homeViewModel.sendMultipleSms()
+                },
+            ) {
                 Text("SMS 보내기")
             }
         }
+    }
+}
+
+@Composable
+fun CellMessage(smsMessage: SmsMessage) {
+    Row(
+        horizontalArrangement = Arrangement.spacedBy(16.dp),
+    ) {
+        Text(
+            text = smsMessage.idx.toString(),
+            color = Color.Black,
+            maxLines = 1,
+        )
+        Text(
+            text = smsMessage.name,
+            color = Color.Black,
+            maxLines = 1,
+        )
+        Text(
+            text = smsMessage.phoneNumber,
+            color = Color.Black,
+            maxLines = 1,
+        )
+        Text(
+            modifier = Modifier.weight(1f),
+            text = smsMessage.message,
+            color = Color.Black,
+            maxLines = 1,
+            overflow = TextOverflow.Ellipsis,
+        )
+        Text(
+            text = smsMessage.isSuccess ?: "",
+            color = Color.Blue,
+            maxLines = 1,
+        )
     }
 }
 
@@ -188,4 +246,12 @@ fun HomeScreenPreview() {
             homeViewModel = homeViewModel,
         )
     }
+}
+
+@Preview
+@Composable
+fun CellMessagePreview() {
+    CellMessage(
+        SmsMessage(1, "엄영일", "010-4--2-5160", "회비 납부 바랍니다.", "성공"),
+    )
 }

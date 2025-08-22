@@ -217,7 +217,7 @@ class MainActivity : ComponentActivity() {
         val result = viewModel.checkSpreadSheetUrl()
         Timber.i("##readDataFromSheet, result $result")
         if (result.first) {
-            val range = "문자메시지!A1:D10" // 예: 시트1의 A1부터 D10까지
+            val range = "문자메시지!A2:D" // 예: 시트1의 A1부터 D10까지
 
             try {
                 val response =
@@ -235,8 +235,7 @@ class MainActivity : ComponentActivity() {
                         values.forEach { _ ->
                             Timber.i("##readDataFromSheet ${values.map { it.map { cell -> cell.toString() } }}")
                         }
-                        // 예: RecyclerView 어댑터에 데이터 설정
-//                    myAdapter.submitList(values.map { it.map { cell -> cell.toString() } })
+                        viewModel.checkCells(values as List<List<String>>)
                     }
                 } else {
                     Timber.d("##No data found.")
@@ -246,7 +245,9 @@ class MainActivity : ComponentActivity() {
                 e.printStackTrace()
             }
         } else {
-            Toast.makeText(this, "URL이 잘못 입력되었습니다.", Toast.LENGTH_SHORT).show()
+            withContext(Dispatchers.Main) {
+                Toast.makeText(applicationContext, "URL이 잘못 입력되었습니다.", Toast.LENGTH_SHORT).show()
+            }
         }
     }
 }

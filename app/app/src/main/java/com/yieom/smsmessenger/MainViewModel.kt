@@ -84,4 +84,13 @@ open class MainViewModel
                 Pair(false, "")
             }
         }
+
+        private val _cellsState = MutableStateFlow(listOf<List<String>>())
+        open val cellsState = _cellsState.asStateFlow()
+
+        fun checkCells(cells: List<List<String>>) {
+            val regex = "^01(?:0|1|[6-9])-(?:\\d{3}|\\d{4})-\\d{4}$".toRegex()
+            val result = cells.filter { it.size == 4 && regex.find(it[2]) != null }
+            _cellsState.value = result
+        }
     }
