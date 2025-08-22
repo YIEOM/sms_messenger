@@ -7,7 +7,22 @@ plugins {
     alias(libs.plugins.ksp)
 }
 
+val KEY_ALIAS: String by project
+val KEY_PASSWORD: String by project
+val STORE_FILE: String by project
+val STORE_PASSWORD: String by project
+
+
 android {
+    signingConfigs {
+        create("release") {
+            keyAlias = KEY_ALIAS
+            keyPassword = KEY_PASSWORD
+            storeFile = file(STORE_FILE)
+            storePassword = STORE_PASSWORD
+        }
+    }
+
     namespace = "com.yieom.smsmessenger"
     compileSdk = 35
 
@@ -23,11 +38,13 @@ android {
 
     buildTypes {
         release {
-            isMinifyEnabled = false
+            isMinifyEnabled = true
+            isShrinkResources = true
             proguardFiles(
                 getDefaultProguardFile("proguard-android-optimize.txt"),
                 "proguard-rules.pro"
             )
+            signingConfig = signingConfigs.getByName("release")
         }
     }
     compileOptions {
