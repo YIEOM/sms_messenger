@@ -217,6 +217,8 @@ class MainActivity : ComponentActivity() {
         val result = viewModel.checkSpreadSheetUrl()
         Timber.i("##readDataFromSheet, result $result")
         if (result.first) {
+            viewModel.saveSheetUrl()
+
             val range = "문자메시지!A2:D" // 예: 시트1의 A1부터 D10까지
 
             try {

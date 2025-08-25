@@ -30,7 +30,7 @@ android {
         applicationId = "com.yieom.smsmessenger"
         minSdk = 34
         targetSdk = 35
-        versionCode = 1
+        versionCode = 2
         versionName = "1.0"
 
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
@@ -102,4 +102,6 @@ dependencies {
 
     // Coroutines for background tasks
     implementation(libs.kotlinx.coroutines.android)
+
+    implementation(libs.datastore.preferences)
 }

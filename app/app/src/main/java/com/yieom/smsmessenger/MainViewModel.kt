@@ -3,6 +3,7 @@ package com.yieom.smsmessenger
 import android.Manifest
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import com.yieom.smsmessenger.dataStore.DataStoreRepository
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.channels.Channel
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -15,9 +16,25 @@ import javax.inject.Inject
 @HiltViewModel
 open class MainViewModel
     @Inject
-    constructor() : ViewModel() {
+    constructor(
+        private val dataStoreRepository: DataStoreRepository,
+    ) : ViewModel() {
         init {
             Timber.d("##init")
+            loadSheetUrl()
+        }
+
+        fun loadSheetUrl() {
+            viewModelScope.launch {
+                val sheetUrl = dataStoreRepository.getUrl()
+                _sheetUrlTextState.value = sheetUrl
+            }
+        }
+
+        fun saveSheetUrl() {
+            viewModelScope.launch {
+                dataStoreRepository.saveSheetUrl(sheetUrlTextState.value)
+            }
         }
 
         val requiredPermissions =

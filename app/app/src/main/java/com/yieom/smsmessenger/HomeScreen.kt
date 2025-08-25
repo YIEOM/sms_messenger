@@ -1,6 +1,5 @@
 package com.yieom.smsmessenger
 
-import android.app.Application
 import android.widget.Toast
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
@@ -30,11 +29,9 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalSoftwareKeyboardController
 import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.text.style.TextOverflow
-import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.navigation.NavController
-import androidx.navigation.compose.rememberNavController
 import kotlinx.coroutines.flow.collectLatest
 import timber.log.Timber
 
@@ -191,67 +188,4 @@ fun CellMessage(smsMessage: SmsMessage) {
             maxLines = 1,
         )
     }
-}
-
-// A simple mock Application for previews
-class MockApplication : Application() {
-    // You can override methods here if your ViewModel interacts with them,
-    // but for basic previews, an empty class often suffices.
-    override fun onCreate() {
-        super.onCreate()
-        // Mock initialization if needed
-    }
-}
-
-@Composable
-@Preview(showBackground = true) // 미리보기에 배경색을 표시하여 UI를 더 잘 볼 수 있도록 합니다.
-fun HomeScreenPreview() {
-    // 미리보기에서는 실제 NavController나 ViewModel의 전체 기능이 필요하지 않을 수 있습니다.
-    // 간단한 mock 객체나 rememberNavController()를 사용할 수 있습니다.
-    val navController = rememberNavController()
-    val mockApplicationContext = MockApplication()
-
-    // ViewModel의 경우, 미리보기용으로 hiltViewModel()을 직접 호출하거나,
-    // 테스트용으로 간단한 mock ViewModel 인스턴스를 만들 수 있습니다.
-    // Hilt ViewModel을 미리보기에서 사용하려면 추가 설정이 필요할 수 있으며,
-    // 간단한 미리보기에서는 ViewModel의 의존성을 제거한 버전을 사용하거나
-    // 필요한 최소한의 데이터만 가진 mock 객체를 전달하는 것이 더 쉬울 수 있습니다.
-
-    // 예시 1: 실제 ViewModel 인스턴스 사용 (Hilt 설정 및 의존성에 따라 동작 여부 다름)
-    // val mainViewModel: MainViewModel = hiltViewModel()
-    // val homeViewModel: HomeViewModel = hiltViewModel()
-
-    // 예시 2: 간단한 Mock ViewModel 사용 (ViewModel 로직이 복잡하지 않을 경우)
-    // 이 방법은 ViewModel의 실제 로직을 테스트하는 것이 아니라 UI 모양만 보는 데 적합합니다.
-    class MockMainViewModel : MainViewModel(/* 필요한 의존성 mock 객체 전달 */) {
-        // 미리보기에 필요한 최소한의 동작이나 상태만 구현
-        override val sheetUrlTextState = kotlinx.coroutines.flow.MutableStateFlow("미리보기 URL")
-    }
-
-    class MockHomeViewModel : HomeViewModel(mockApplicationContext) {
-        // 미리보기에 필요한 최소한의 동작이나 상태만 구현
-        // ... 다른 필요한 상태나 함수 override
-    }
-
-    val mainViewModel = MockMainViewModel() // 실제 MainViewModel 생성 방식에 따라 수정
-    val homeViewModel = MockHomeViewModel() // 실제 HomeViewModel 생성 방식에 따라 수정
-
-    // MaterialTheme으로 감싸서 앱의 전체적인 테마를 적용하는 것이 좋습니다.
-    // SMSMessengerTheme이 있다면 그것을 사용하세요. 없다면 기본 MaterialTheme을 사용합니다.
-    MaterialTheme {
-        // 만약 SMSMessengerTheme 같은 커스텀 테마가 있다면 그것으로 교체하세요.
-        HomeScreen(
-            navController = navController,
-            mainViewModel = mainViewModel,
-            homeViewModel = homeViewModel,
-        )
-    }
-}
-
-@Preview
-@Composable
-fun CellMessagePreview() {
-    CellMessage(
-        SmsMessage(1, "엄영일", "010-4--2-5160", "회비 납부 바랍니다.", "성공"),
-    )
 }
