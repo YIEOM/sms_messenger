@@ -77,7 +77,6 @@ fun HomeScreen(
                 Modifier
                     .fillMaxSize()
                     .padding(16.dp),
-            verticalArrangement = Arrangement.Center,
             horizontalAlignment = Alignment.CenterHorizontally,
         ) {
             Text(text = "Home", style = MaterialTheme.typography.headlineMedium, color = Color.Black)

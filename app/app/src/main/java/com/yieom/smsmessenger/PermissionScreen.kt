@@ -41,7 +41,8 @@ fun PermissionScreen(
     Surface(
         modifier =
             Modifier
-                .fillMaxSize(),
+                .fillMaxSize()
+                .padding(32.dp),
         color = Color.White,
     ) {
         Column(
@@ -49,17 +50,27 @@ fun PermissionScreen(
                 Modifier
                     .fillMaxSize()
                     .padding(16.dp),
-            verticalArrangement = Arrangement.Center,
             horizontalAlignment = Alignment.CenterHorizontally,
         ) {
-            Text(text = "Permission Screen", style = MaterialTheme.typography.headlineMedium, color = Color.Black)
-            Button(
-                onClick = {
-                    executeToRequestPermissions(activity as MainActivity, mainViewModel.requiredPermissions)
-                },
-                modifier = Modifier.width(200.dp).height(40.dp),
+            Text(text = "Permission", style = MaterialTheme.typography.headlineMedium, color = Color.Black)
+            Column(
+                modifier =
+                    Modifier
+                        .fillMaxSize(),
+                verticalArrangement = Arrangement.Center,
+                horizontalAlignment = Alignment.CenterHorizontally,
             ) {
-                Text(text = "Grant permission", color = Color.Green)
+                Button(
+                    onClick = {
+                        executeToRequestPermissions(activity as MainActivity, mainViewModel.requiredPermissions)
+                    },
+                    modifier =
+                        Modifier
+                            .width(200.dp)
+                            .height(40.dp),
+                ) {
+                    Text(text = "권한 얻기", color = Color.White)
+                }
             }
         }
     }

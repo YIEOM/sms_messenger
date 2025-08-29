@@ -12,7 +12,6 @@ val KEY_PASSWORD: String by project
 val STORE_FILE: String by project
 val STORE_PASSWORD: String by project
 
-
 android {
     signingConfigs {
         create("release") {
@@ -30,7 +29,7 @@ android {
         applicationId = "com.yieom.smsmessenger"
         minSdk = 34
         targetSdk = 35
-        versionCode = 2
+        versionCode = 3
         versionName = "1.0"
 
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
@@ -42,7 +41,7 @@ android {
             isShrinkResources = true
             proguardFiles(
                 getDefaultProguardFile("proguard-android-optimize.txt"),
-                "proguard-rules.pro"
+                "proguard-rules.pro",
             )
             signingConfig = signingConfigs.getByName("release")
         }
