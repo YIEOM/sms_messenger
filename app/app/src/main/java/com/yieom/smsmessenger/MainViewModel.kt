@@ -8,6 +8,7 @@ import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.channels.Channel
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asStateFlow
+import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.receiveAsFlow
 import kotlinx.coroutines.launch
 import timber.log.Timber
@@ -26,8 +27,8 @@ open class MainViewModel
 
         fun loadSheetUrl() {
             viewModelScope.launch {
-                val sheetUrl = dataStoreRepository.getUrl()
-                _sheetUrlTextState.value = sheetUrl
+                val url = dataStoreRepository.getSheetUrl().first()
+                _sheetUrlTextState.value = url
             }
         }
 
@@ -110,4 +111,11 @@ open class MainViewModel
             val result = cells.filter { it.size == 4 && regex.find(it[2]) != null }
             _cellsState.value = result
         }
+
+        fun isPermissionHandled() = dataStoreRepository.getIsPermissionHandled()
+
+        fun saveIsPermissionHandled(isPermissionHandled: Boolean) =
+            viewModelScope.launch {
+                dataStoreRepository.saveIsPermissionHandled(isPermissionHandled)
+            }
     }

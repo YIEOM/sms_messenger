@@ -13,6 +13,7 @@ sealed class MainDestination(val route: String) {
     object Help : MainDestination("Help")
     object Setting : MainDestination("setting")
     object Permission : MainDestination("permission")
+    object MainScreenWithNav : MainDestination("mainScreenWithNav")
 }
 
 data class BottomNavItem(
@@ -46,22 +47,22 @@ fun MainNavHost(
     mainViewModel: MainViewModel,
 ) {
     Timber.d("##MainNavHost, recomposition")
-    LaunchedEffect(Unit) {
-        mainViewModel.navigationEventChannel.collect { route ->
-            Timber.d("##MainNavHost, collect navigationEvent: $route")
-            when (route) {
-                MainDestination.Home.route -> {
-                    if (navController.currentDestination?.route == MainDestination.Permission.route) {
-                        navController.popBackStack()
-                    }
-                }
-
-                else -> {
-                    navController.navigate(route)
-                }
-            }
-        }
-    }
+//    LaunchedEffect(Unit) {
+//        mainViewModel.navigationEventChannel.collect { route ->
+//            Timber.d("##MainNavHost, collect navigationEvent: $route")
+//            when (route) {
+//                MainDestination.Home.route -> {
+//                    if (navController.currentDestination?.route == MainDestination.Permission.route) {
+//                        navController.popBackStack()
+//                    }
+//                }
+//
+//                else -> {
+//                    navController.navigate(route)
+//                }
+//            }
+//        }
+//    }
 
     NavHost(
         navController = navController,

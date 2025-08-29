@@ -1,10 +1,5 @@
 package com.yieom.smsmessenger
 
-import android.app.Activity
-import android.content.Context
-import android.content.Intent
-import android.net.Uri
-import android.provider.Settings
 import androidx.activity.compose.LocalActivity
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
@@ -21,15 +16,15 @@ import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.unit.dp
-import androidx.core.app.ActivityCompat
-import androidx.core.content.ContextCompat
 import androidx.navigation.NavController
 import timber.log.Timber
 
 @Composable
-fun PermissionScreen(navController: NavController, mainViewModel: MainViewModel) {
+fun PermissionScreen(
+    navController: NavController,
+    mainViewModel: MainViewModel,
+) {
     Timber.d("##PermissionScreen, recomposition")
 
     val activity = LocalActivity.current
@@ -38,28 +33,32 @@ fun PermissionScreen(navController: NavController, mainViewModel: MainViewModel)
         mainViewModel.permissionEventChannel.collect { isGranted ->
             Timber.d("##PermissionScreen, collect permissionEvent: $isGranted")
             if (isGranted) {
-                navController.popBackStack()
+                mainViewModel.saveIsPermissionHandled(true)
             }
         }
     }
 
     Surface(
-        modifier = Modifier
-            .fillMaxSize(),
-        color = Color.White
+        modifier =
+            Modifier
+                .fillMaxSize(),
+        color = Color.White,
     ) {
         Column(
-            modifier = Modifier
-                .fillMaxSize()
-                .padding(16.dp),
+            modifier =
+                Modifier
+                    .fillMaxSize()
+                    .padding(16.dp),
             verticalArrangement = Arrangement.Center,
-            horizontalAlignment = Alignment.CenterHorizontally
+            horizontalAlignment = Alignment.CenterHorizontally,
         ) {
             Text(text = "Permission Screen", style = MaterialTheme.typography.headlineMedium, color = Color.Black)
-            Button(onClick = {
-                executeToRequestPermissions(activity as MainActivity, mainViewModel.requiredPermissions)
-            },
-                modifier = Modifier.width(200.dp).height(40.dp)) {
+            Button(
+                onClick = {
+                    executeToRequestPermissions(activity as MainActivity, mainViewModel.requiredPermissions)
+                },
+                modifier = Modifier.width(200.dp).height(40.dp),
+            ) {
                 Text(text = "Grant permission", color = Color.Green)
             }
         }
@@ -68,7 +67,10 @@ fun PermissionScreen(navController: NavController, mainViewModel: MainViewModel)
 
 const val PERMISSION_REQUEST_CODE = 100001
 
-private fun executeToRequestPermissions(activity: MainActivity, permissions: Array<String>) {
+private fun executeToRequestPermissions(
+    activity: MainActivity,
+    permissions: Array<String>,
+) {
     val shouldShowRationale = activity.shouldShowRationale(permissions.toList())
 
     Timber.d("##checkPermissions, shouldShowRationale: $shouldShowRationale")
@@ -78,4 +80,3 @@ private fun executeToRequestPermissions(activity: MainActivity, permissions: Arr
         activity.requestPermissions(permissions, PERMISSION_REQUEST_CODE)
     }
 }
-

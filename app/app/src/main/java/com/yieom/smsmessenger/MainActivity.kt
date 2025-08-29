@@ -22,6 +22,7 @@ import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.SideEffect
+import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
@@ -33,6 +34,8 @@ import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.lifecycleScope
 import androidx.lifecycle.repeatOnLifecycle
 import androidx.navigation.NavHostController
+import androidx.navigation.compose.NavHost
+import androidx.navigation.compose.composable
 import androidx.navigation.compose.currentBackStackEntryAsState
 import androidx.navigation.compose.rememberNavController
 import com.google.android.gms.auth.api.signin.GoogleSignIn
@@ -50,6 +53,7 @@ import com.yieom.smsmessenger.ui.theme.SMSMessengerTheme
 import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.collectLatest
+import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import timber.log.Timber
@@ -70,7 +74,7 @@ class MainActivity : ComponentActivity() {
                     modifier = Modifier.fillMaxSize(),
                     color = Color.White,
                 ) {
-                    MainScreenWithNav(viewModel = viewModel)
+                    RootComposable(viewModel = viewModel)
                 }
             }
         }
@@ -89,7 +93,11 @@ class MainActivity : ComponentActivity() {
     override fun onResume() {
         super.onResume()
 
-        viewModel.onResumePermissionCheck(isGrantedRequiredPermissions())
+        lifecycleScope.launch {
+            if (viewModel.isPermissionHandled().first()) {
+                viewModel.onResumePermissionCheck(isGrantedRequiredPermissions())
+            }
+        }
     }
 
     @Deprecated(
@@ -251,6 +259,36 @@ class MainActivity : ComponentActivity() {
                 Toast.makeText(applicationContext, "URL이 잘못 입력되었습니다.", Toast.LENGTH_SHORT).show()
             }
         }
+    }
+}
+
+@Composable
+fun RootComposable(viewModel: MainViewModel) {
+    val navController = rememberNavController()
+
+    NavHost(
+        navController = navController,
+        startDestination = "initial_loading_route", // 임시 시작점 또는 실제 로직에 따른 시작점
+    ) {
+        composable(MainDestination.Permission.route) {
+            PermissionScreen(navController, viewModel)
+        }
+
+        composable(MainDestination.MainScreenWithNav.route) {
+            // MainDestination에 이 라우트 정의 필요
+            MainScreenWithNav(viewModel = viewModel)
+        }
+
+        composable("initial_loading_route") {
+        }
+    }
+
+    val isPermissionHandled by viewModel.isPermissionHandled().collectAsState(false)
+
+    if (isPermissionHandled) {
+        MainScreenWithNav(viewModel = viewModel)
+    } else {
+        navController.navigate(route = MainDestination.Permission.route)
     }
 }
 
