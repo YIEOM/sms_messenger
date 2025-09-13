@@ -1,4 +1,4 @@
-package com.yieom.smsmessenger.dataStore
+package com.yieom.smsmessenger.data.dataStore
 
 import androidx.datastore.core.DataStore
 import androidx.datastore.preferences.core.Preferences

@@ -3,7 +3,7 @@ package com.yieom.smsmessenger
 import android.Manifest
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import com.yieom.smsmessenger.dataStore.DataStoreRepository
+import com.yieom.smsmessenger.data.dataStore.DataStoreRepository
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.channels.Channel
 import kotlinx.coroutines.flow.MutableStateFlow
