@@ -52,7 +52,7 @@ fun PermissionScreen(
                     .padding(16.dp),
             horizontalAlignment = Alignment.CenterHorizontally,
         ) {
-            Text(text = "Permission", style = MaterialTheme.typography.headlineMedium, color = Color.Black)
+            Text(text = "Permission", style = MaterialTheme.typography.headlineMedium)
             Column(
                 modifier =
                     Modifier
@@ -69,7 +69,7 @@ fun PermissionScreen(
                             .width(200.dp)
                             .height(40.dp),
                 ) {
-                    Text(text = "권한 얻기", color = Color.White)
+                    Text(text = "권한 얻기")
                 }
             }
         }

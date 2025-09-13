@@ -39,7 +39,7 @@ fun HelpScreen() {
                 Text(
                     text = "스프레드 시트 URL 가져오기",
                     style = MaterialTheme.typography.bodyLarge,
-                    color = Color.Blue,
+                    color = com.yieom.smsmessenger.ui.theme.LightPrimary,
                 )
                 Text(
                     text = "스프레드 시트 앱에서 사용하고자 하는 파일을 선택->\n오른 상단의 메뉴에서 공유 및 내보내기 선택->\n링크 복사 선택",
